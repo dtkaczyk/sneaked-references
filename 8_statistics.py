@@ -14,6 +14,7 @@ if __name__ == "__main__":
     dois_no_pdf = 0
     dois_methods_agree = 0
     dois_methods_disagree = 0
+    dois_methods_disagree_10 = 0
     dois_manipulated_method1 = 0
     dois_manipulated_method2 = 0
 
@@ -45,6 +46,8 @@ if __name__ == "__main__":
             else:
                 print(doi, method1_sneaked, method2_sneaked)
                 dois_methods_disagree += 1
+                if abs(method1_sneaked - method2_sneaked) > 10:
+                    dois_methods_disagree_10 += 1
 
             if method1_sneaked > 0:
                 dois_manipulated_method1 += 1
@@ -60,6 +63,7 @@ if __name__ == "__main__":
     print(" - DOIs with no PDF", dois_no_pdf)
     print(" - DOIs where methods agreed", dois_methods_agree)
     print(" - DOIs where methods disagreed", dois_methods_disagree)
+    print(" - DOIs where methods disagreed by >10 references", dois_methods_disagree_10)
     print()
     print("Total DOIs manipulated (method1)", dois_manipulated_method1)
     print("Total DOIs manipulated (method2)", dois_manipulated_method2)

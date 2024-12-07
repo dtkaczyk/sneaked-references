@@ -59,7 +59,7 @@ sum(data2$Nb.Undue.Citations)
 summary(data2$Nb.Undue.Citations)
 #Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 #
-1.0     1.0     1.0    29.9     1.0  6059.0
+#1.0     1.0     1.0    29.9     1.0  6059.0
 # Nb of benefiter of a single citation=
 dd <- data2[data2$Nb.Undue.Citations==1,]
 nrow(dd)
@@ -126,9 +126,35 @@ nrow(Case3)
 sum(Case3$Nb.Sneaked)
 # 3176
 
-### Comparing raw number Grobid / Xref
-sum(dg[dg$Diff>0,]$Diff)
-# 84270
+### How many sneaked ref found with length diff
+dgW <- dg[dg$Diff>0,]
+sum(dgW$Diff)
+# 84270 instead of 78736
+### Graphs to compare Crosreff vs Grobid vs lenght diif vs real sneaked
+### How wrong is the diff length method
+dgW$W <- dgW$Diff - dgW$Nb.Sneaked
+summary(dgW$W)
+#Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+#-34.000   0.000   0.000   2.003   1.000 465.000
+sum(dgW[dgW$W>0,]$W)
+# 6197
+#Real = Crossref.ReferencesNbr - Nb.Sneaked
+#dg$Real <- dg$Crossref.ReferencesNbr - dg$Nb.Sneaked
+#dg$GW <- dg$Real - dg$XML.ReferencesNbr
+#sum(dg[dg$GW>0,]$GW)
+# 6197
+dgp <- dgW[dgW$W>0,]
+table(dgp$W)
+#
+pdf("Fig/DiffBar.pdf")
+p <- ggplot(dgp, aes(x=W)) + xlab("Nb of false sneaked deteted using diff length")+ylab("Amount of DOIs for which the nb of false positive is x")+geom_histogram(color="darkblue", fill="lightblue",binwidth=1)+geom_vline(aes(xintercept = mean(W)),col='red',linewidth=0.5)+geom_text(aes(label=round(mean(W),1),y=1,x=mean(W)),vjust=-1,col='red',size=3)
+p
+dev.off()
+
+
+# Set trim argument to FALSE
+ggplot(dg$W, aes(x=W, y=len)) +
+  geom_violin(trim=FALSE)
 
 ###################
 #
@@ -202,18 +228,23 @@ p<-ggplot(Papers.With.S, aes(x=created.Date, y=Nb.Sneaked))+geom_point(color="bl
 p
 dev.off()
 
+
+##########
+#
+# Comparing raw nb of ref in Crossref vs Grobid vs ...
+#
 pdf("Fig/CrossRefBar.pdf")
-p <- ggplot(data3, aes(x=Crossref.ReferencesNbr)) + xlab("Number of ref according to CrosRef (in a single paper)")+ylab("Amount of papers whith x references")+geom_histogram(color="darkblue", fill="lightblue")
+p <- ggplot(data3, aes(x=Crossref.ReferencesNbr)) + xlab("Number of ref according to CrosRef (in a single paper)")+ylab("Amount of papers whith x references")+geom_histogram(color="darkblue", fill="lightblue")+geom_vline(aes(xintercept = mean(Crossref.ReferencesNbr)),col='red',linewidth=0.5)+geom_text(aes(label=round(mean(Crossref.ReferencesNbr),1),y=900,x=mean(Crossref.ReferencesNbr)+16),vjust=1,col='red',size=3)
 p
 dev.off()
 
 pdf("Fig/GroXMLBar.pdf")
-p <- ggplot(data3, aes(x=XML.ReferencesNbr)) + xlab("Number of ref according to Grobid/XML (in a single paper)")+ylab("Amount of papers whith x references")+geom_histogram(color="darkblue", fill="lightblue")
+p <- ggplot(data3, aes(x=XML.ReferencesNbr)) + xlab("Number of ref according to Grobid (in a single paper)")+ylab("Amount of papers whith x references")+geom_histogram(color="darkblue", fill="lightblue")+geom_vline(aes(xintercept = mean(XML.ReferencesNbr)),col='red',linewidth=0.5)+geom_text(aes(label=round(mean(Diff),1),y=1780,x=mean(Diff)+16),vjust=1,col='red',size=3)
 p
 dev.off()
 
 pdf("Fig/DiffBar.pdf")
-p <- ggplot(data3, aes(x=Diff)) + xlab("Diff between CrossRef and Grobid/XML")+ylab("Amount of papers whith x references")+geom_histogram(color="darkblue", fill="lightblue")
+p <- ggplot(data3, aes(x=Diff)) + xlab("Diff. between CrossRef and Grobid/XML")+ylab("Amount of papers for which there is a diff of x")+geom_histogram(color="darkblue", fill="lightblue",binwidth=1)+geom_vline(aes(xintercept = mean(Diff)),col='red',linewidth=0.5)+geom_text(aes(label=round(mean(Diff),1),y=1280,x=mean(Diff)+16),vjust=1,col='red',size=3)
 p
 dev.off()
 
@@ -226,8 +257,8 @@ data4$Date.To..Cited.Paper.<-as.Date(as.POSIXct(data4$Date.To..Cited.Paper., tz 
 data4$Date.Difference. <- data4$Date.from..Citing.Paper. - data4$Date.To..Cited.Paper.
 #color <- c("blue","red")[1+ (data4$Date.from..Citing.Paper. == data4$Date.To..Cited.Paper.)]
 summary(as.numeric(data4$Date.Difference.))
-#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's
-#    0.0    16.0    33.0    38.3    55.0  1295.0     312
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's
+# 0.0    39.0    73.0   152.9   117.0  1587.0    1947
 
 pdf("Fig/Coherence.pdf")
 p <- ggplot(data4, aes(x=Date.from..Citing.Paper., y=Date.Difference.))+geom_point(color="blue", size=3,alpha = 0.1)+ xlab("Creation date of a citing DOI")+ylab("Time Difference, citing creation date minus cited creation date")
@@ -243,8 +274,15 @@ dev.off()
 pdf("Fig/TimeDiffBar.pdf")
 NoNA <- data4[!is.na(data4$Date.Difference.),]
 days.diff <- as.numeric(NoNA$Date.Difference.)
-ggplot()+aes(days.diff)+geom_histogram(color="darkblue", fill="lightblue", bins = 101)+xlim(0,100)
+ggplot()+aes(days.diff)+geom_histogram(color="darkblue", fill="lightblue",binwidth=1)+xlab("Time Difference, citing creation date minus cited creation date")+ylab("Sneaked references count")
 dev.off()
+
+pdf("Fig/TimeDiffBarZoom.pdf")
+NoNA <- data4[!is.na(data4$Date.Difference.),]
+days.diff <- as.numeric(NoNA$Date.Difference.)
+ggplot()+aes(days.diff)+geom_histogram(color="darkblue", fill="lightblue",binwidth=1)+xlim(-1,250)+xlab("Time Difference, citing creation date minus cited creation date")+ylab("Sneaked references count")
+dev.off()
+
 
 #ggplot(data3, aes(x=Diff)) +
 #    geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
