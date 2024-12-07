@@ -1,6 +1,8 @@
 # Detecting sneaked references
 
-A set of scripts for detecting and analysing the cases of sneaked references in the Crossref metadata. Sneaked references are bibliographic references deposited into Crossref that are missing from the original article.
+A set of scripts for detecting and analysing the cases of sneaked references in the Crossref metadata.
+
+Sneaked references are references registered in some scientometric platforms without being listed in the actual publications where they ought to be found.
 
 The following scripts are included:
 
